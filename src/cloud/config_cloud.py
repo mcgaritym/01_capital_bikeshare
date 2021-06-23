@@ -14,7 +14,7 @@ port = int(3306)
 db = 'Bikeshare'
 
 # s3 credentials
-service_name = 's3'
-region_name = 'us-east-2'
-aws_access_key_id = 'AKIAUT5FFG26TQYHA6NL'
-aws_secret_access_key = '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'
+service_name = ''
+region_name = ''
+aws_access_key_id = ''
+aws_secret_access_key = ''
