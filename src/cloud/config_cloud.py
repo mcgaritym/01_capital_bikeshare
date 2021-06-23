@@ -7,11 +7,11 @@ Created on Thu May 27 22:16:52 2021
 """
 
 # credentials
-user = 'admin'
-pwd = "Nalgene09!"
-host = 'bikeshare-database-1.cj4j9csypvlc.us-east-2.rds.amazonaws.com'
+user = ''
+pwd = ""
+host = ''
 port = int(3306)
-db = 'Bikeshare'
+db = ''
 
 # s3 credentials
 service_name = ''
