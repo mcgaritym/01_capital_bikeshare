@@ -9,6 +9,10 @@ import config_cloud
 from setup_cloud import Setup
 import glob
 import os
+import logging
+import boto3
+from botocore.exceptions import ClientError
+import zipfile
 
 # call Setup class from setup_cloud.py file
 connection = Setup(config_cloud.user, config_cloud.pwd, config_cloud.host, config_cloud.port, config_cloud.db)
@@ -51,6 +55,18 @@ conn.execute("""CREATE TABLE IF NOT EXISTS rides (
 # close connection
 connection.close_connection()
 
+# create s3 connection
+s3 = boto3.resource(
+    service_name=config_cloud.service_name,
+    region_name=config_cloud.region_name,
+    aws_access_key_id=config_cloud.aws_access_key_id,
+    aws_secret_access_key=config_cloud.aws_secret_access_key
+)
+
+# print current list of S3 buckets
+for bucket in s3.buckets.all():
+    print(bucket.name)
+
 # collect ride files
 def get_files(file_name):
 
@@ -63,7 +79,7 @@ def get_files(file_name):
 
     # create empty dataframe, loop over files and concatenate data to dataframe
     # df = pd.DataFrame()
-    for f in files:
+    for f in files[7:8]:
 
         # read file
         data = pd.read_csv(f)
@@ -72,8 +88,18 @@ def get_files(file_name):
         # create connection
         conn = connection.create_connection()
 
-        # append to table
-        data.to_sql(name='rides', con=conn, if_exists='append', chunksize=50000)
+        # append to local table
+        data.to_sql(name='rides', con=conn, if_exists='append', chunksize=20000)
+
+        try:
+            # upload file to s3
+            object_name = f.split("/")[-1]
+            s3.Object('stocks.bucket', object_name).upload_file(Filename=f)
+            print('{} uploaded to s3 successfully'.format(object_name))
+
+        except:
+            # error
+            print('Error: Did not upload {} to s3'.format(object_name))
 
         # close connection
         connection.close_connection()
