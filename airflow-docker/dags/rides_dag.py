@@ -3,6 +3,7 @@ from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 from airflow.operators.email import EmailOperator
+from airflow.models.baseoperator import chain
 
 # import python functions in local python files
 from extract_rides_s3 import extract_rides_s3
@@ -12,10 +13,7 @@ from transform_load_stations_rds import transform_load_stations_rds
 from query_rides import query_rides
 from email_results import email_results
 
-# import pymysql
-
-# These args will get passed on to each operator
-# You can override them on a per-task basis during operator initialization
+# default airflow args
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -36,18 +34,18 @@ default_args = {
     # 'on_success_callback': some_other_function,
     # 'on_retry_callback': another_function,
     # 'sla_miss_callback': yet_another_function,
-    # 'trigger_rule': 'all_success'
+    # 'trigger_rule': 'always'
 }
 
 with DAG(
-    'rides_dag',
-    default_args=default_args,
-    description='Rides DAG, which summarizes and graphs monthly rides and emails results',
-    # schedule_interval="@hourly",
-    schedule_interval=None,
-    start_date=datetime(2021, 1, 9),
-    catchup=False,
-    tags=['rides_dag_tag'],
+        'rides_dag',
+        default_args=default_args,
+        description='Rides DAG, which summarizes and graphs monthly rides and emails results',
+        # schedule_interval="@hourly",
+        schedule_interval=None,
+        start_date=datetime(2021, 1, 9),
+        catchup=False,
+        tags=['rides_dag_tag'],
 ) as dag:
 
     # connect to SQL python task
@@ -95,6 +93,7 @@ with DAG(
     )
 
     # specify order/dependency of tasks
-    extract_rides_s3 >> transform_load_rides_rds >> query_rides
-    extract_stations_s3 >> transform_load_stations_rds >> query_rides
+    extract_rides_s3 >> transform_load_rides_rds
+    extract_stations_s3 >> transform_load_stations_rds
+    [transform_load_rides_rds, transform_load_stations_rds] >> query_rides
     query_rides >> email_results
