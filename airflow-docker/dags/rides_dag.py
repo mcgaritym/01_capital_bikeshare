@@ -38,14 +38,14 @@ default_args = {
 }
 
 with DAG(
-        'rides_dag',
+        'rideshare_dag',
         default_args=default_args,
         description='Rides DAG, which summarizes and graphs monthly rides and emails results',
         # schedule_interval="@hourly",
         schedule_interval=None,
         start_date=datetime(2021, 1, 9),
         catchup=False,
-        tags=['rides_dag_tag'],
+        tags=['rideshare_dag_tag'],
 ) as dag:
 
     # connect to SQL python task
@@ -88,7 +88,7 @@ with DAG(
         python_callable=email_results,
         op_kwargs={"sender": 'pythonemail4u@gmail.com',
                    "receiver": ['mcgaritym@gmail.com'],
-                   "email_subject": 'Undervalued Stock Picks for Today'},
+                   "email_subject": 'Recent Rides Report'},
         dag=dag,
     )
 

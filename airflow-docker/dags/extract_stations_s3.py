@@ -1,6 +1,6 @@
 # import
 import os
-import glob as glob
+from glob import glob
 from config import *
 import boto3
 import json
@@ -8,7 +8,7 @@ import requests
 import pandas as pd
 
 # connect to s3
-def s3_resource(service_name, region_name, aws_access_key_id, aws_secret_access_key):
+def s3_resource():
     s3 = boto3.resource(
         service_name=service_name,
         region_name=region_name,
@@ -36,16 +36,25 @@ def stations_csv_s3():
     df_stations = pd.json_normalize(todos, record_path=['stations'])
     # df_stations = df_stations.drop(columns=['rental_methods', 'eightd_station_services'])
 
-    # convert to csv and save
-    df_stations.to_csv('capital_bikeshare_stations.csv')
+    # get data folder directory
+    cwd = os.getcwd()
+    par_directory = os.path.dirname(os.getcwd())
+    data_directory = os.path.join(par_directory, 'data')
 
-def stations_s3(s3, bucket_name):
+    # convert to csv and save
+    df_stations.to_csv(data_directory + '/capital_bikeshare_stations.csv')
+
+# upload to s3
+def upload_s3(local_file_search, bucket_name, key_name):
 
     # collect local ride files
     cwd = os.getcwd()
-    # par_directory = os.path.dirname(os.getcwd())
-    # data_directory = os.path.join(par_directory, 'data')
-    files = glob(os.path.join(cwd, '*capital_bikeshare_stations*'))
+    par_directory = os.path.dirname(os.getcwd())
+    data_directory = os.path.join(par_directory, 'data')
+    # files = glob(os.path.join(data_directory, '*capitalbikeshare*'))
+    files = glob(os.path.join(data_directory, local_file_search))
+    print(files)
+    s3 = s3_resource()
 
     # for each file:
     for f in files:
@@ -53,17 +62,28 @@ def stations_s3(s3, bucket_name):
         # try to upload files to  buckets
         try:
             # upload file to s3
-            object_name = f.split("/")[-1]
-            s3.Object(bucket_name, object_name).upload_file(Filename=f)
-            print('{} uploaded to s3 successfully'.format(object_name))
+            f_name = f.split("/")[-1]
+            # s3.Object(bucket_name, object_name).upload_file(Filename=f)
+            print(f)
+            print(f_name)
+            s3.meta.client.upload_file(Filename=f, Bucket=bucket_name, Key='{}/{}'.format(key_name, f_name))
+
+            print('{} uploaded to s3 successfully'.format(f))
 
         except:
             # error
-            print('Error: Did not upload {} to s3'.format(object_name))
+            print('Error: Did not upload {} to s3'.format(f))
 
-    # print objects within bucket
-    bucket_name = s3.Bucket(bucket_name)
-    for my_bucket_object in bucket_name.objects.all():
-        print('Object in {}: {}'.format(bucket_name, my_bucket_object))
+    # Print out bucket names and objects within buckets
+    for bucket in s3.buckets.all():
+
+        print('Current Bucket: ', bucket.name)
+
+        for object in bucket.objects.all():
+
+            print('Current Object: ', object.key)
+
+stations_csv_s3()
+upload_s3('*capital_bikeshare_stations*', 'capitalbikeshare-bucket', 'stations')
 
 

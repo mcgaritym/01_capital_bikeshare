@@ -11,17 +11,31 @@ from pretty_html_table import build_table
 import pandas as pd
 from sqlalchemy import create_engine
 
+def connect_RDS():
+
+    # specify second MySQL database connection (faster read_sql query feature)
+    connection = create_engine("mysql+pymysql://{user}:{password}@{host}:{port}/{db}".format(user=rds_user,
+                                                                    password=rds_pwd, host=rds_host,
+                                                                    port=rds_port, db=rds_database))
+    return connection
+
+def close_RDS():
+
+    try:
+        connect_RDS().dispose()
+
+    except:
+        pass
+
 # connect to SQL and create database, table
 def email_results(sender, receiver, email_subject):
 
     # connect to RDS, get table, convert to df
 
     # get undervalued stocks df via SQL
-    connection_2 = create_engine("mysql+pymysql://{user}:{password}@{host}:{port}/{db}".format(user=MYSQL_USER,
-                                                                    password=MYSQL_ROOT_PASSWORD, host=MYSQL_HOST,
-                                                                    port=MYSQL_PORT, db=MYSQL_DATABASE))
+    connection = connect_RDS()
 
-    df = pd.read_sql_query("SELECT symbol, `Last Sale`, `Market Cap`, industry, sector FROM undervalued_stocks", con=connection_2)
+    df = pd.read_sql_query("SELECT * FROM recent_rides;", con=connection)
 
     # specify credentials
     port = 465  # For SSL
@@ -34,7 +48,7 @@ def email_results(sender, receiver, email_subject):
     email_html = """
     <html>
       <body>
-        <p>Hello, here are today's stock picks: </p> <br>
+        <p>Hello, here are the most recent rides: </p> <br>
         {0}
       </body>
     </html>
