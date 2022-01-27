@@ -1,44 +1,73 @@
 # import
 import os
 from glob import glob
-from config import *
 import boto3
 import json
 import requests
 import pandas as pd
 from datetime import datetime, date
 import time
+import mysql.connector as msql
+import mysql.connector
+from sqlalchemy import create_engine
+from config import *
 
 def connect_RDS():
-    pass
+
+    # specify second MySQL database connection (faster read_sql query feature)
+    connection = create_engine("mysql+pymysql://{user}:{password}@{host}:{port}/{db}".format(user=rds_user,
+                                                                    password=rds_pwd, host=rds_host,
+                                                                    port=rds_port, db=rds_database))
+    return connection
+
+def alter_RDS():
+
+    try:
+
+        connection = mysql.connector.connect(host=rds_host, user=rds_user, password=rds_pwd, port=rds_port, database=rds_database)
+        cursor = connection.cursor()
+        cursor.execute("ALTER TABLE rides ORDER BY `started_at` ASC;")
+        cursor.execute("ALTER TABLE rides DROP id, ADD new_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY;")
+        cursor.close()
+
+    except:
+        pass
 
 def close_RDS():
-    pass
 
-def clean_RDS():
-
-    cursor.execute("ALTER TABLE rides ORDER BY `started_at` ASC;")
-    cursor.execute("ALTER TABLE rides DROP id, ADD new_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY;")
-
+    return connect_RDS().dispose()
 
 def query_rides():
+
+    # update table to sort by date and update keys, if applicable
+    alter_RDS()
 
     # connect to RDS
     connection = connect_RDS()
 
     # read query
     recent_rides = pd.read_sql_query("""
-    SELECT * 
-    FROM rides 
-    JOIN stations 
-    ON rides.short_name = stations.`Start station number`
-    ORDER BY `started_at` ASC 
+    SELECT rides.ride_id, rides.started_at, 
+    stations.name, stations.lat, stations.lon, stations.capacity, stations.short_name 
+    FROM rides
+    JOIN stations
+    ON rides.start_station_id = stations.short_name
+    ORDER BY `started_at` ASC
     LIMIT 10;""", con=connection)
 
-    # drop duplicates, send to csv file, and print results
+    # send results to sql
     recent_rides.to_sql(name='recent_rides', con=connection, if_exists="replace", chunksize=1000)
-    recent_rides.to_csv('recent_rides_' + str(datetime.now().strftime("%Y-%m-%d__%H-%M-%S")) + '.csv',
-                              index=False)
+
+    # get data folder directory
+    cwd = os.getcwd()
+    par_directory = os.path.dirname(os.getcwd())
+    data_directory = os.path.join(par_directory, 'data')
+
+    # save csv file to data folder
+    recent_rides.to_csv(data_directory + '/recent_rides_' + str(datetime.now().strftime("%Y-%m-%d__%H-%M-%S")) + '.csv', index=False)
     print(recent_rides)
 
-    return "Recent Rides Query Successful"
+    return print("Recent Rides Query Successful")
+
+# alter_RDS()
+# query_rides()

@@ -6,8 +6,9 @@ from airflow.operators.email import EmailOperator
 from airflow.models.baseoperator import chain
 
 # import python functions in local python files
-from extract_rides_s3 import extract_rides_s3
-from extract_stations_s3 import extract_stations_s3
+from create_database import create_database
+from extract_rides_s3 import upload_rides_s3
+from extract_stations_s3 import upload_stations_s3
 from transform_load_rides_rds import transform_load_rides_rds
 from transform_load_stations_rds import transform_load_stations_rds
 from query_rides import query_rides
@@ -48,17 +49,30 @@ with DAG(
         tags=['rideshare_dag_tag'],
 ) as dag:
 
+    # create database
+    create_database = PythonOperator(
+        task_id='create_database_',
+        python_callable=create_database,
+        dag=dag,
+    )
+
     # connect to SQL python task
     extract_rides_s3 = PythonOperator(
         task_id='extract_rides_s3_',
-        python_callable=extract_rides_s3,
+        python_callable=upload_rides_s3,
+        op_kwargs={"local_file_search": '*capitalbikeshare*',
+                   "bucket_name": 'capitalbikeshare-bucket',
+                   "key_name": 'rides'},
         dag=dag,
     )
 
     # connect to SQL python task
     extract_stations_s3 = PythonOperator(
         task_id='extract_stations_s3_',
-        python_callable=extract_stations_s3,
+        python_callable=upload_stations_s3,
+        op_kwargs={"local_file_search": '*capital_bikeshare_stations*',
+                   "bucket_name": 'capitalbikeshare-bucket',
+                   "key_name": 'stations'},
         dag=dag,
     )
 
@@ -66,6 +80,8 @@ with DAG(
     transform_load_rides_rds = PythonOperator(
         task_id='transform_load_rides_rds_',
         python_callable=transform_load_rides_rds,
+        op_kwargs={"bucket_name": 'capitalbikeshare-bucket',
+                   "key_name": 'tripdata.csv'},
         dag=dag,
     )
 
@@ -73,6 +89,8 @@ with DAG(
     transform_load_stations_rds = PythonOperator(
         task_id='transform_load_stations_rds_',
         python_callable=transform_load_stations_rds,
+        op_kwargs={"bucket_name": 'capitalbikeshare-bucket',
+                   "key_name": 'stations/capital_bikeshare_stations.csv'},
         dag=dag,
     )
 
@@ -93,7 +111,7 @@ with DAG(
     )
 
     # specify order/dependency of tasks
+    create_database >> [extract_rides_s3, extract_stations_s3]
     extract_rides_s3 >> transform_load_rides_rds
     extract_stations_s3 >> transform_load_stations_rds
-    [transform_load_rides_rds, transform_load_stations_rds] >> query_rides
-    query_rides >> email_results
+    [transform_load_rides_rds, transform_load_stations_rds] >> query_rides >> email_results

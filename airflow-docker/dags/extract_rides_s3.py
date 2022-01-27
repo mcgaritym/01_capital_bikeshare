@@ -46,7 +46,7 @@ def s3_resource():
     return s3
 
 # upload to s3
-def upload_s3(local_file_search, bucket_name, key_name):
+def upload_rides_s3(local_file_search, bucket_name, key_name):
 
     # collect local ride files
     cwd = os.getcwd()
@@ -83,4 +83,4 @@ def upload_s3(local_file_search, bucket_name, key_name):
 
             print('Current Object: ', object.key)
 
-upload_s3('*capitalbikeshare*', 'capitalbikeshare-bucket', 'rides')
+# upload_rides_s3('*capitalbikeshare*', 'capitalbikeshare-bucket', 'rides')

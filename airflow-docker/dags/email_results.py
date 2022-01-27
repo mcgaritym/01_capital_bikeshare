@@ -4,7 +4,8 @@ import mysql.connector
 import os
 from config import *
 from datetime import timedelta
-import smtplib, ssl
+import smtplib
+import ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from pretty_html_table import build_table
@@ -30,9 +31,7 @@ def close_RDS():
 # connect to SQL and create database, table
 def email_results(sender, receiver, email_subject):
 
-    # connect to RDS, get table, convert to df
-
-    # get undervalued stocks df via SQL
+    # connect to RDS
     connection = connect_RDS()
 
     df = pd.read_sql_query("SELECT * FROM recent_rides;", con=connection)
@@ -72,3 +71,5 @@ def email_results(sender, receiver, email_subject):
             server.sendmail(sender_email, receiver_email, message.as_string())
 
     return "Rides Info Email Successful"
+
+# email_results('pythonemail4u@gmail.com', ['mcgaritym@gmail.com'], 'Recent Rides Report')

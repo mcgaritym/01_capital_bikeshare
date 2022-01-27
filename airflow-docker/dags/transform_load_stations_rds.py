@@ -53,39 +53,6 @@ def transform_load_stations_rds(bucket_name, key_name):
     # connect to RDS
     connection = connect_RDS()
 
-    # # specify bucket
-    # bucket_name = s3.Bucket(bucket_name)
-    #
-    # # for each object in bucket
-    # for object in bucket_name.objects.all():
-    #
-    #     if key_name in object.key:
-    #
-    #         try:
-    #
-    #             # get file
-    #             print('Before:', object.key)
-    #             obj = s3.Object(bucket_name, object.key)
-    #             print(obj)
-    #
-    #             # get df
-    #             df = pd.read_csv(obj['Body'])
-    #             print(df)
-    #
-    #             # send to RDS
-    #             df.to_sql(name='stations', con=connection, if_exists="replace", chunksize=1000)
-    #
-    #             # load to RDS
-    #             close_connection = close_RDS()
-    #             close_connection
-    #             print('{} sent to RDS successfully'.format(object))
-    #
-    #         except:
-    #             print('Error: {} NOT sent to RDS'.format(object))
-    #
-    #     else:
-    #         pass
-
     try:
         obj = s3.get_object(Bucket=bucket_name, Key=key_name)
         df = pd.read_csv(io.BytesIO(obj['Body'].read()))
@@ -101,4 +68,4 @@ def transform_load_stations_rds(bucket_name, key_name):
     recent_rides = pd.read_sql_query("""SELECT * FROM stations;""", con=connection)
     print(recent_rides)
 
-transform_load_stations_rds('capitalbikeshare-bucket', 'stations/capital_bikeshare_stations.csv')
+# transform_load_stations_rds('capitalbikeshare-bucket', 'stations/capital_bikeshare_stations.csv')

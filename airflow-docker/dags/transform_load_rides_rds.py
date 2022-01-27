@@ -73,9 +73,10 @@ def clean_rides(df):
     except:
         df.drop(columns=['rideable_type'], inplace=True)
 
-    # create new duration and number of rides column
+    # convert to datetime and create duration column
     df['started_at'] = pd.to_datetime(df['started_at'])
     df['ended_at'] = pd.to_datetime(df['ended_at'])
+    df['duration'] = df['ended_at'] - df['started_at']
 
     # convert datetime columns back to string and drop index for MySQL processing
     df["started_at"] = df['started_at'].astype(str)
@@ -131,4 +132,4 @@ def transform_load_rides_rds(bucket_name, key_name):
     recent_rides = pd.read_sql_query("""SELECT * FROM rides;""", con=connection)
     print(recent_rides)
 
-transform_load_rides_rds('capitalbikeshare-bucket', 'tripdata.csv')
+# transform_load_rides_rds('capitalbikeshare-bucket', 'tripdata.csv')

@@ -33,4 +33,4 @@ def create_database():
     ;""")
     cursor.close()
 
-create_database()
+# create_database()
