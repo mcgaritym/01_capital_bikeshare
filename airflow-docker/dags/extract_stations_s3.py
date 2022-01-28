@@ -34,30 +34,22 @@ def stations_csv_s3():
 
     # flatten nested json
     df_stations = pd.json_normalize(todos, record_path=['stations'])
-
-    # get data folder directory
-    cwd = os.getcwd()
     par_directory = os.path.dirname(os.getcwd())
     data_directory = os.path.join(par_directory, 'data')
-    print(data_directory)
 
     # convert to csv and save
     df_stations.to_csv(data_directory + '/capital_bikeshare_stations.csv')
+
+    print('sent to s3')
 
     return df_stations
 
 # upload to s3
 def upload_stations_s3(local_file_search, bucket_name, key_name):
 
-    # call function to get data from json request, save to csv
-    stations_csv_s3()
-
-    # collect local ride files
-    cwd = os.getcwd()
     par_directory = os.path.dirname(os.getcwd())
     data_directory = os.path.join(par_directory, 'data')
     files = glob(os.path.join(data_directory, local_file_search))
-    print(files)
     s3 = s3_resource()
 
     # for each file:
@@ -88,6 +80,6 @@ def upload_stations_s3(local_file_search, bucket_name, key_name):
             print('Current Object: ', object.key)
 
 # stations_csv_s3()
-upload_stations_s3('*capital_bikeshare_stations*', 'capitalbikeshare-bucket', 'stations')
+# upload_stations_s3('*capital_bikeshare_stations*', 'capitalbikeshare-bucket', 'stations')
 
 

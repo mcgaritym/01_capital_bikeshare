@@ -55,17 +55,8 @@ def query_rides():
     ORDER BY `started_at` ASC
     LIMIT 10;""", con=connection)
 
-    # send results to sql
-    recent_rides.to_sql(name='recent_rides', con=connection, if_exists="replace", chunksize=1000)
-
-    # get data folder directory
-    cwd = os.getcwd()
-    par_directory = os.path.dirname(os.getcwd())
-    data_directory = os.path.join(par_directory, 'data')
-
-    # save csv file to data folder
-    recent_rides.to_csv(data_directory + '/recent_rides_' + str(datetime.now().strftime("%Y-%m-%d__%H-%M-%S")) + '.csv', index=False)
-    print(recent_rides)
+    # send results to sql, and save to csv
+    recent_rides.to_sql(name='recent_rides', con=connection, if_exists="replace", chunksize=1000, index=False)
 
     return print("Recent Rides Query Successful")
 

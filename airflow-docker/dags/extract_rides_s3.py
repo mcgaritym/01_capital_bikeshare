@@ -49,10 +49,8 @@ def s3_resource():
 def upload_rides_s3(local_file_search, bucket_name, key_name):
 
     # collect local ride files
-    cwd = os.getcwd()
     par_directory = os.path.dirname(os.getcwd())
     data_directory = os.path.join(par_directory, 'data')
-    # files = glob(os.path.join(data_directory, '*capitalbikeshare*'))
     files = glob(os.path.join(data_directory, local_file_search))
     s3 = s3_resource()
 
