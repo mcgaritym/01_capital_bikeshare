@@ -47,13 +47,16 @@ def query_rides():
 
     # read query
     recent_rides = pd.read_sql_query("""
-    SELECT rides.ride_id, rides.started_at, 
-    stations.name, stations.lat, stations.lon, stations.capacity, stations.short_name 
+    SELECT rides.ride_id, rides.started_at, rides.duration, 
+    stations.name, stations.lat, stations.lon, stations.capacity, stations.short_name,
+    DateDiff(second, started_at, ended_at) as duration_seconds
     FROM rides
     JOIN stations
     ON rides.start_station_id = stations.short_name
     ORDER BY `started_at` ASC
     LIMIT 10;""", con=connection)
+
+    print(recent_rides)
 
     # send results to sql, and save to csv
     recent_rides.to_sql(name='recent_rides', con=connection, if_exists="replace", chunksize=1000, index=False)

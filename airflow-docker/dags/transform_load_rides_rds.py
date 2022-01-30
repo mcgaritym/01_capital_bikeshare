@@ -8,15 +8,6 @@ import boto3
 from sqlalchemy import create_engine
 
 
-# def s3_client(region_name, aws_access_key_id, aws_secret_access_key):
-#     s3_session = boto3.Session(
-#         region_name=region_name,
-#         aws_access_key_id=aws_access_key_id,
-#         aws_secret_access_key=aws_secret_access_key)
-#     s3 = s3_session.client('s3')
-#     return s3
-
-
 def connect_RDS():
 
     # specify second MySQL database connection (faster read_sql query feature)
@@ -81,6 +72,8 @@ def clean_rides(df):
     # convert datetime columns back to string and drop index for MySQL processing
     df["started_at"] = df['started_at'].astype(str)
     df["ended_at"] = df['ended_at'].astype(str)
+    df["duration"] = df['duration'].astype(str)
+
     df.reset_index(drop=True, inplace=True)
 
     return df
@@ -127,9 +120,9 @@ def transform_load_rides_rds(bucket_name, key_name):
         else:
             pass
 
-    # read stations table
+    # read rides table
     connection = connect_RDS()
-    recent_rides = pd.read_sql_query("""SELECT * FROM rides;""", con=connection)
+    recent_rides = pd.read_sql_query("""SELECT COUNT(*) FROM rides;""", con=connection)
     print(recent_rides)
 
 # transform_load_rides_rds('capitalbikeshare-bucket', 'tripdata.csv')

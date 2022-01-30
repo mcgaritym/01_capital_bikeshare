@@ -62,21 +62,23 @@ ENTRYPOINT [ "/opt/entrypoint.sh" ]
 # Specify the User that the actual main process will run as
 USER ${spark_uid}
 
-# copy file
-# RUN mkdir -p opt/data
-RUN mkdir -p data/
-COPY config.py .
-COPY ./data ./data
 
 # copy package requirements and run
 FROM apache/airflow:2.2.3
+
+# copy file
+COPY data/* ./data/
 COPY requirements.txt .
-COPY config.py .
 COPY config.py /dags
+COPY config.py .
+
 RUN pip install -r requirements.txt
 
 RUN mkdir -p /home/airflow/.wdm
 RUN chmod -R 777 /home/airflow/.wdm
+
+
+
 
 
 

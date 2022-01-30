@@ -9,15 +9,6 @@ from sqlalchemy import create_engine
 from glob import glob
 from io import StringIO, BytesIO
 
-# # connect to s3
-# def s3_resource():
-#     s3 = boto3.resource(
-#         service_name=service_name,
-#         region_name=region_name,
-#         aws_access_key_id=aws_access_key_id,
-#         aws_secret_access_key=aws_secret_access_key)
-#     return s3
-
 
 def s3_client():
     s3_session = boto3.Session(

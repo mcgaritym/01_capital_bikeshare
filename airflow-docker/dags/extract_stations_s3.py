@@ -17,15 +17,6 @@ def s3_resource():
     return s3
 
 
-# def s3_client(region_name, aws_access_key_id, aws_secret_access_key):
-#     s3_session = boto3.Session(
-#         region_name=region_name,
-#         aws_access_key_id=aws_access_key_id,
-#         aws_secret_access_key=aws_secret_access_key)
-#     s3 = s3_session.client('s3')
-#     return s3
-
-
 def stations_csv_s3():
 
     # request json data

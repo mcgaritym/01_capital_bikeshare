@@ -60,7 +60,7 @@ with DAG(
     extract_rides_s3 = PythonOperator(
         task_id='extract_rides_s3_',
         python_callable=upload_rides_s3,
-        op_kwargs={"local_file_search": '*capitalbikeshare*',
+        op_kwargs={"local_file_search": '*-capitalbikeshare-*',
                    "bucket_name": 'capitalbikeshare-bucket',
                    "key_name": 'rides'},
         dag=dag,
