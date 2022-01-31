@@ -1,9 +1,8 @@
+# import libraries
+# import airflow libraries
 from datetime import datetime, timedelta
 from airflow import DAG
-from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
-from airflow.operators.email import EmailOperator
-from airflow.models.baseoperator import chain
 
 # import python functions in local python files
 from create_database import create_database
@@ -23,37 +22,25 @@ default_args = {
     'email_on_retry': False,
     'retries': 3,
     'retry_delay': timedelta(minutes=2),
-    # 'queue': 'bash_queue',
-    # 'pool': 'backfill',
-    # 'priority_weight': 10,
-    # 'end_date': datetime(2016, 1, 1),
-    # 'wait_for_downstream': False,
-    # 'dag': dag,
-    # 'sla': timedelta(hours=2),
-    # 'execution_timeout': timedelta(seconds=300),
-    # 'on_failure_callback': some_function,
-    # 'on_success_callback': some_other_function,
-    # 'on_retry_callback': another_function,
-    # 'sla_miss_callback': yet_another_function,
-    # 'trigger_rule': 'always'
 }
 
 with DAG(
         'rideshare_dag',
         default_args=default_args,
         description='Rides DAG, which summarizes and graphs monthly rides and emails results',
-        schedule_interval="@daily",
-        # schedule_interval=None,
-        start_date=datetime(2021, 1, 9),
+        schedule_interval="@monthly",
+        start_date=datetime.now(),
         catchup=False,
         tags=['rideshare_dag_tag'],
 ) as dag:
+
 
     # create database
     create_database = PythonOperator(
         task_id='create_database_',
         python_callable=create_database,
-        dag=dag,
+        op_kwargs={"database_name": 'rideshare_db'},
+                   dag=dag,
     )
 
     # connect to SQL python task

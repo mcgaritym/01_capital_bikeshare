@@ -1,12 +1,9 @@
-# import
+# import libraries
 import pandas as pd
 import io
-import os
-from glob import glob
 from config import *
 import boto3
 from sqlalchemy import create_engine
-
 
 def connect_RDS():
 
@@ -123,6 +120,6 @@ def transform_load_rides_rds(bucket_name, key_name):
     # read rides table
     connection = connect_RDS()
     recent_rides = pd.read_sql_query("""SELECT COUNT(*) FROM rides;""", con=connection)
-    print(recent_rides)
+    print('Rides Count: ', recent_rides)
 
-# transform_load_rides_rds('capitalbikeshare-bucket', 'tripdata.csv')
+    return print("Rides Transformed and Loaded to RDS")

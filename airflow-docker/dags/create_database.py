@@ -1,22 +1,19 @@
 # import libraries
 import mysql.connector as msql
 import mysql.connector
-import os
 from config import *
 
 # create database
-def create_database():
+def create_database(database_name):
 
     # specify MySQL database connection, cursor object, change settings
-    connection = mysql.connector.connect(host=rds_host, user=rds_user, password=rds_pwd, port=rds_port) #, database=rds_database)
+    connection = mysql.connector.connect(host=rds_host, user=rds_user, password=rds_pwd, port=rds_port)
     cursor = connection.cursor()
-    cursor.execute("DROP DATABASE IF EXISTS rideshare_db;")
-    cursor.execute("CREATE DATABASE rideshare_db;")
+    cursor.execute("CREATE DATABASE IF NOT EXISTS {};".format(database_name))
 
+    # connect to database
     connection = mysql.connector.connect(host=rds_host, user=rds_user, password=rds_pwd, port=rds_port, database=rds_database)
     cursor = connection.cursor()
-    # cursor.execute('set GLOBAL max_allowed_packet=1073741824')
-    # cursor.execute("set GLOBAL sql_mode=''")
     cursor.execute("DROP TABLE IF EXISTS rides;")
     cursor.execute("DROP TABLE IF EXISTS stations;")
 
@@ -33,4 +30,5 @@ def create_database():
     ;""")
     cursor.close()
 
-# create_database()
+    return print('Database Created')
+

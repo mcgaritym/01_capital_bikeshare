@@ -1,12 +1,5 @@
-# import
-import os
-from glob import glob
-import boto3
-import json
-import requests
+# import libraries
 import pandas as pd
-from datetime import datetime, date
-import time
 import mysql.connector as msql
 import mysql.connector
 from sqlalchemy import create_engine
@@ -62,6 +55,3 @@ def query_rides():
     recent_rides.to_sql(name='recent_rides', con=connection, if_exists="replace", chunksize=1000, index=False)
 
     return print("Recent Rides Query Successful")
-
-# alter_RDS()
-# query_rides()

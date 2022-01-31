@@ -1,4 +1,4 @@
-# import
+# import libraries
 import os
 from glob import glob
 from config import *
@@ -70,7 +70,6 @@ def upload_stations_s3(local_file_search, bucket_name, key_name):
 
             print('Current Object: ', object.key)
 
-# stations_csv_s3()
-# upload_stations_s3('*capital_bikeshare_stations*', 'capitalbikeshare-bucket', 'stations')
+    return print("Stations Uploaded to s3")
 
 

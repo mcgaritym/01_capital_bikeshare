@@ -98,27 +98,27 @@ services:
     restart: always
 
 
-  db:
-    image: mysql
-    restart: always
-    # env_file: config.env
-    environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      # user
-      # MYSQL_USER: 'root'
-      # password
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_HOST: ${MYSQL_HOST}
-    ports:
-      # <Port exposed> : < MySQL Port running inside container>
-      - '3307:3306'
-    expose:
-      # Opens port 3306 on the container
-      - '3306'
-      - '3307'
-      # Where our data will be persisted
-    volumes:
-      - my-db:/var/lib/mysql
+#  db:
+#    image: mysql
+#    restart: always
+#    # env_file: config.env
+#    environment:
+#      MYSQL_DATABASE: ${MYSQL_DATABASE}
+#      # user
+#      # MYSQL_USER: 'root'
+#      # password
+#      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+#      MYSQL_HOST: ${MYSQL_HOST}
+#    ports:
+#      # <Port exposed> : < MySQL Port running inside container>
+#      - '3307:3306'
+#    expose:
+#      # Opens port 3306 on the container
+#      - '3306'
+#      - '3307'
+#      # Where our data will be persisted
+#    volumes:
+#      - my-db:/var/lib/mysql
 
 
   airflow-webserver:
@@ -295,5 +295,5 @@ services:
 # Names our volume
 volumes:
   postgres-db-volume:
-  my-db:
+#  my-db:
 

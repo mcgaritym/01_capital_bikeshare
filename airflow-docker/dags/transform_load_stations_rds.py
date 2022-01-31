@@ -1,14 +1,9 @@
-# import
+# import libraries
 import pandas as pd
-import io
-import os
-import glob as glob
 from config import *
 import boto3
 from sqlalchemy import create_engine
-from glob import glob
-from io import StringIO, BytesIO
-
+from io import BytesIO
 
 def s3_client():
     s3_session = boto3.Session(
@@ -17,7 +12,6 @@ def s3_client():
         aws_secret_access_key=aws_secret_access_key)
     s3 = s3_session.client('s3')
     return s3
-
 
 def connect_RDS():
 
@@ -35,7 +29,6 @@ def close_RDS():
     except:
         pass
 
-
 def transform_load_stations_rds(bucket_name, key_name):
 
     # specify s3
@@ -46,7 +39,8 @@ def transform_load_stations_rds(bucket_name, key_name):
 
     try:
         obj = s3.get_object(Bucket=bucket_name, Key=key_name)
-        df = pd.read_csv(io.BytesIO(obj['Body'].read()))
+        df = pd.read_csv(BytesIO(obj['Body'].read()))
+
         # send to RDS
         df.to_sql(name='stations', con=connection, if_exists="replace", chunksize=1000, index=False)
         print('Stations sent to RDS successfully')
@@ -56,7 +50,7 @@ def transform_load_stations_rds(bucket_name, key_name):
         print('Error: {} {} NOT sent to RDS'.format(bucket_name, key_name))
 
     # # read stations table
-    recent_rides = pd.read_sql_query("""SELECT * FROM stations;""", con=connection)
-    print(recent_rides)
+    recent_rides = pd.read_sql_query("""SELECT COUNT(*) FROM stations;""", con=connection)
+    print('Stations Count: ', recent_rides)
 
-# transform_load_stations_rds('capitalbikeshare-bucket', 'stations/capital_bikeshare_stations.csv')
+    return print("Stations Transformed and Loaded to RDS")
