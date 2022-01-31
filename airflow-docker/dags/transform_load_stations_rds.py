@@ -4,30 +4,7 @@ from config import *
 from io import BytesIO
 from AWSConnect import AWSConnect
 
-# def s3_client():
-#     s3_session = boto3.Session(
-#         region_name=region_name,
-#         aws_access_key_id=aws_access_key_id,
-#         aws_secret_access_key=aws_secret_access_key)
-#     s3 = s3_session.client('s3')
-#     return s3
-#
-# def connect_RDS():
-#
-#     # specify second MySQL database connection (faster read_sql query feature)
-#     connection = create_engine("mysql+pymysql://{user}:{password}@{host}:{port}/{db}".format(user=rds_user,
-#                                                                     password=rds_pwd, host=rds_host,
-#                                                                     port=rds_port, db=rds_database))
-#     return connection
-#
-# def close_RDS():
-#
-#     try:
-#         connect_RDS().dispose()
-#
-#     except:
-#         pass
-
+# function to transform/load station data
 def transform_load_stations_rds(bucket_name, key_name):
 
     # get class, and create connections
@@ -48,7 +25,7 @@ def transform_load_stations_rds(bucket_name, key_name):
         pass
         print('Error: {} {} NOT sent to RDS'.format(bucket_name, key_name))
 
-    # # read stations table
+    # read stations table
     recent_rides = pd.read_sql_query("""SELECT COUNT(*) FROM stations;""", con=rds_sqlalchemy)
     rds_sqlalchemy.dispose()
     print('Stations Count: ', recent_rides)

@@ -5,25 +5,8 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from pretty_html_table import build_table
 import pandas as pd
-from sqlalchemy import create_engine
 from config import *
 from AWSConnect import AWSConnect
-
-# def connect_RDS():
-#
-#     # specify second MySQL database connection (faster read_sql query feature)
-#     connection = create_engine("mysql+pymysql://{user}:{password}@{host}:{port}/{db}".format(user=rds_user,
-#                                                                     password=rds_pwd, host=rds_host,
-#                                                                     port=rds_port, db=rds_database))
-#     return connection
-#
-# def close_RDS():
-#
-#     try:
-#         connect_RDS().dispose()
-#
-#     except:
-#         pass
 
 # connect to SQL and create database, table
 def email_results(sender, receiver, email_subject):
@@ -32,6 +15,7 @@ def email_results(sender, receiver, email_subject):
     connect = AWSConnect(rds_user, rds_pwd, rds_host, rds_port, rds_database, service_name, region_name, aws_access_key_id, aws_secret_access_key)
     rds_sqlalchemy = connect.rds_sqlalchemy()
 
+    # get rides and turn into df
     df = pd.read_sql_query("SELECT * FROM recent_rides;", con=rds_sqlalchemy)
 
     # specify credentials

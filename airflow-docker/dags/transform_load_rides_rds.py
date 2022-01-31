@@ -4,40 +4,7 @@ import io
 from config import *
 from AWSConnect import AWSConnect
 
-# def connect_RDS():
-#
-#     # specify second MySQL database connection (faster read_sql query feature)
-#     connection = create_engine("mysql+pymysql://{user}:{password}@{host}:{port}/{db}".format(user=rds_user,
-#                                                                     password=rds_pwd, host=rds_host,
-#                                                                     port=rds_port, db=rds_database))
-#     return connection
-
-# def close_RDS():
-#
-#     return connect_RDS().dispose()
-
-
-# # connect to s3
-# def s3_resource():
-#     s3 = boto3.resource(
-#         service_name=service_name,
-#         region_name=region_name,
-#         aws_access_key_id=aws_access_key_id,
-#         aws_secret_access_key=aws_secret_access_key)
-#     return s3
-#
-# # connect to s3
-# def s3_client():
-#     s3_session = boto3.Session(
-#         region_name=region_name,
-#         aws_access_key_id=aws_access_key_id,
-#         aws_secret_access_key=aws_secret_access_key)
-#     s3 = s3_session.client('s3')
-#     return s3
-
-
-
-
+# function to clean ride date
 def clean_rides(df):
 
     # rename, convert columns depending on file structure.
@@ -86,7 +53,12 @@ def transform_load_rides_rds(bucket_name, key_name):
     rds_sqlalchemy = connect.rds_sqlalchemy()
 
     # for each object in bucket
-    for obj in s3_resource.Bucket(bucket_name).objects.all():
+    object_list = list(s3_resource.Bucket(bucket_name).objects.all())
+    print(object_list)
+    object_list = object_list[-5:]
+    for obj in object_list:
+
+    # for obj in s3_resource.Bucket(bucket_name).objects.all():
 
         if key_name in obj.key:
 

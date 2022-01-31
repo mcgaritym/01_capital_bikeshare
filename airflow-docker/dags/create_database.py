@@ -1,6 +1,4 @@
 # import libraries
-import mysql.connector as msql
-import mysql.connector
 from config import *
 from AWSConnect import AWSConnect
 

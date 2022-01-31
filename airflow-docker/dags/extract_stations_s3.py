@@ -7,16 +7,6 @@ import requests
 import pandas as pd
 from AWSConnect import AWSConnect
 
-# # connect to s3
-# def s3_resource():
-#     s3 = boto3.resource(
-#         service_name=service_name,
-#         region_name=region_name,
-#         aws_access_key_id=aws_access_key_id,
-#         aws_secret_access_key=aws_secret_access_key)
-#     return s3
-
-
 def stations_csv_s3():
 
     # request json data

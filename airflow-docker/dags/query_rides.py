@@ -1,35 +1,7 @@
 # import libraries
 import pandas as pd
-import mysql.connector as msql
-import mysql.connector
-from sqlalchemy import create_engine
 from config import *
 from AWSConnect import AWSConnect
-
-# def connect_RDS():
-#
-#     # specify second MySQL database connection (faster read_sql query feature)
-#     connection = create_engine("mysql+pymysql://{user}:{password}@{host}:{port}/{db}".format(user=rds_user,
-#                                                                     password=rds_pwd, host=rds_host,
-#                                                                     port=rds_port, db=rds_database))
-#     return connection
-
-# def alter_RDS():
-#
-#     try:
-#
-#         connection = mysql.connector.connect(host=rds_host, user=rds_user, password=rds_pwd, port=rds_port, database=rds_database)
-#         cursor = connection.cursor()
-#         cursor.execute("ALTER TABLE rides ORDER BY `started_at` ASC;")
-#         cursor.execute("ALTER TABLE rides DROP id, ADD new_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY;")
-#         cursor.close()
-#
-#     except:
-#         pass
-#
-# def close_RDS():
-#
-#     return connect_RDS().dispose()
 
 def query_rides():
 
@@ -39,7 +11,7 @@ def query_rides():
     rds_sqlalchemy = connect.rds_sqlalchemy()
 
     try:
-        rds_mysql_cursor.execute("ALTER TABLE rides ORDER BY `started_at` ASC;")
+        rds_mysql_cursor.execute("ALTER TABLE rides ORDER BY `started_at` DESC;")
         rds_mysql_cursor.execute("ALTER TABLE rides DROP id, ADD new_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY;")
         rds_mysql_cursor.close()
 
@@ -48,13 +20,12 @@ def query_rides():
 
     # read query
     recent_rides = pd.read_sql_query("""
-    SELECT rides.ride_id, rides.started_at, rides.duration, 
-    stations.name, stations.lat, stations.lon, stations.capacity, stations.short_name,
-    DateDiff(second, started_at, ended_at) as duration_seconds
+    SELECT rides.ride_id, rides.started_at, rides.ended_at, rides.duration, 
+    stations.name, stations.lat, stations.lon, stations.capacity, stations.short_name
     FROM rides
     JOIN stations
     ON rides.start_station_id = stations.short_name
-    ORDER BY `started_at` ASC
+    ORDER BY `started_at` DESC
     LIMIT 10;""", con=rds_sqlalchemy)
 
     print(recent_rides)
