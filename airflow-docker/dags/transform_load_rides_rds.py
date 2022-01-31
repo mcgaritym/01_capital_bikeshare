@@ -2,39 +2,40 @@
 import pandas as pd
 import io
 from config import *
-import boto3
-from sqlalchemy import create_engine
+from AWSConnect import AWSConnect
 
-def connect_RDS():
+# def connect_RDS():
+#
+#     # specify second MySQL database connection (faster read_sql query feature)
+#     connection = create_engine("mysql+pymysql://{user}:{password}@{host}:{port}/{db}".format(user=rds_user,
+#                                                                     password=rds_pwd, host=rds_host,
+#                                                                     port=rds_port, db=rds_database))
+#     return connection
 
-    # specify second MySQL database connection (faster read_sql query feature)
-    connection = create_engine("mysql+pymysql://{user}:{password}@{host}:{port}/{db}".format(user=rds_user,
-                                                                    password=rds_pwd, host=rds_host,
-                                                                    port=rds_port, db=rds_database))
-    return connection
-
-def close_RDS():
-
-    return connect_RDS().dispose()
+# def close_RDS():
+#
+#     return connect_RDS().dispose()
 
 
-# connect to s3
-def s3_resource():
-    s3 = boto3.resource(
-        service_name=service_name,
-        region_name=region_name,
-        aws_access_key_id=aws_access_key_id,
-        aws_secret_access_key=aws_secret_access_key)
-    return s3
+# # connect to s3
+# def s3_resource():
+#     s3 = boto3.resource(
+#         service_name=service_name,
+#         region_name=region_name,
+#         aws_access_key_id=aws_access_key_id,
+#         aws_secret_access_key=aws_secret_access_key)
+#     return s3
+#
+# # connect to s3
+# def s3_client():
+#     s3_session = boto3.Session(
+#         region_name=region_name,
+#         aws_access_key_id=aws_access_key_id,
+#         aws_secret_access_key=aws_secret_access_key)
+#     s3 = s3_session.client('s3')
+#     return s3
 
-# connect to s3
-def s3_client():
-    s3_session = boto3.Session(
-        region_name=region_name,
-        aws_access_key_id=aws_access_key_id,
-        aws_secret_access_key=aws_secret_access_key)
-    s3 = s3_session.client('s3')
-    return s3
+
 
 
 def clean_rides(df):
@@ -78,24 +79,23 @@ def clean_rides(df):
 
 def transform_load_rides_rds(bucket_name, key_name):
 
-    # specify s3
-    s3 = s3_resource()
-
-    # specify bucket
-    # bucket_name = s3.Bucket(bucket_name)
+    # get class, and create connections
+    connect = AWSConnect(rds_user, rds_pwd, rds_host, rds_port, rds_database, service_name, region_name, aws_access_key_id, aws_secret_access_key)
+    s3_resource = connect.s3_resource()
+    s3_client = connect.s3_client()
+    rds_sqlalchemy = connect.rds_sqlalchemy()
 
     # for each object in bucket
-    for obj in s3.Bucket(bucket_name).objects.all():
+    for obj in s3_resource.Bucket(bucket_name).objects.all():
 
         if key_name in obj.key:
 
             try:
                 # specify s3
-                s3 = s3_client()
                 print(obj)
 
                 # get object
-                obj_body = s3.get_object(Bucket='capitalbikeshare-bucket', Key=obj.key)
+                obj_body = s3_client.get_object(Bucket='capitalbikeshare-bucket', Key=obj.key)
                 df = pd.read_csv(io.BytesIO(obj_body['Body'].read()))
 
                 # clean file
@@ -103,9 +103,8 @@ def transform_load_rides_rds(bucket_name, key_name):
 
                 # send to RDS
                 try:
-                    connection = connect_RDS()
-                    df.to_sql(name='rides', con=connection, if_exists="append", chunksize=1000, index=False)
-                    close_RDS()
+                    df.to_sql(name='rides', con=rds_sqlalchemy, if_exists="append", chunksize=1000, index=False)
+                    rds_sqlalchemy.dispose()
                     print('{} rides sent to RDS successfully'.format(obj.key))
 
                 except Exception as e:
@@ -118,8 +117,7 @@ def transform_load_rides_rds(bucket_name, key_name):
             pass
 
     # read rides table
-    connection = connect_RDS()
-    recent_rides = pd.read_sql_query("""SELECT COUNT(*) FROM rides;""", con=connection)
+    recent_rides = pd.read_sql_query("""SELECT COUNT(*) FROM rides;""", con=rds_sqlalchemy)
     print('Rides Count: ', recent_rides)
 
     return print("Rides Transformed and Loaded to RDS")

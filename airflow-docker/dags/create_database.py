@@ -2,22 +2,19 @@
 import mysql.connector as msql
 import mysql.connector
 from config import *
+from AWSConnect import AWSConnect
 
 # create database
 def create_database(database_name):
 
-    # specify MySQL database connection, cursor object, change settings
-    connection = mysql.connector.connect(host=rds_host, user=rds_user, password=rds_pwd, port=rds_port)
-    cursor = connection.cursor()
-    cursor.execute("CREATE DATABASE IF NOT EXISTS {};".format(database_name))
+    # get class, and create connections
+    rideshare_connect = AWSConnect(rds_user, rds_pwd, rds_host, rds_port, rds_database, service_name, region_name, aws_access_key_id, aws_secret_access_key)
+    connection, cursor = rideshare_connect.rds_mysql()
 
-    # connect to database
-    connection = mysql.connector.connect(host=rds_host, user=rds_user, password=rds_pwd, port=rds_port, database=rds_database)
-    cursor = connection.cursor()
+    # create database and drop tables if exists and create rides table attributes
+    cursor.execute("CREATE DATABASE IF NOT EXISTS {};".format(database_name))
     cursor.execute("DROP TABLE IF EXISTS rides;")
     cursor.execute("DROP TABLE IF EXISTS stations;")
-
-    # create rides table
     cursor.execute("""
     CREATE TABLE rides (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
     start_lat DECIMAL(9,7), end_lat DECIMAL(9,7), 

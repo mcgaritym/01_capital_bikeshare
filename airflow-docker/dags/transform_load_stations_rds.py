@@ -1,48 +1,47 @@
 # import libraries
 import pandas as pd
 from config import *
-import boto3
-from sqlalchemy import create_engine
 from io import BytesIO
+from AWSConnect import AWSConnect
 
-def s3_client():
-    s3_session = boto3.Session(
-        region_name=region_name,
-        aws_access_key_id=aws_access_key_id,
-        aws_secret_access_key=aws_secret_access_key)
-    s3 = s3_session.client('s3')
-    return s3
-
-def connect_RDS():
-
-    # specify second MySQL database connection (faster read_sql query feature)
-    connection = create_engine("mysql+pymysql://{user}:{password}@{host}:{port}/{db}".format(user=rds_user,
-                                                                    password=rds_pwd, host=rds_host,
-                                                                    port=rds_port, db=rds_database))
-    return connection
-
-def close_RDS():
-
-    try:
-        connect_RDS().dispose()
-
-    except:
-        pass
+# def s3_client():
+#     s3_session = boto3.Session(
+#         region_name=region_name,
+#         aws_access_key_id=aws_access_key_id,
+#         aws_secret_access_key=aws_secret_access_key)
+#     s3 = s3_session.client('s3')
+#     return s3
+#
+# def connect_RDS():
+#
+#     # specify second MySQL database connection (faster read_sql query feature)
+#     connection = create_engine("mysql+pymysql://{user}:{password}@{host}:{port}/{db}".format(user=rds_user,
+#                                                                     password=rds_pwd, host=rds_host,
+#                                                                     port=rds_port, db=rds_database))
+#     return connection
+#
+# def close_RDS():
+#
+#     try:
+#         connect_RDS().dispose()
+#
+#     except:
+#         pass
 
 def transform_load_stations_rds(bucket_name, key_name):
 
-    # specify s3
-    s3 = s3_client()
-
-    # connect to RDS
-    connection = connect_RDS()
+    # get class, and create connections
+    connect = AWSConnect(rds_user, rds_pwd, rds_host, rds_port, rds_database, service_name, region_name, aws_access_key_id, aws_secret_access_key)
+    s3_client = connect.s3_client()
+    rds_sqlalchemy = connect.rds_sqlalchemy()
 
     try:
-        obj = s3.get_object(Bucket=bucket_name, Key=key_name)
+        obj = s3_client.get_object(Bucket=bucket_name, Key=key_name)
         df = pd.read_csv(BytesIO(obj['Body'].read()))
 
         # send to RDS
-        df.to_sql(name='stations', con=connection, if_exists="replace", chunksize=1000, index=False)
+        df.to_sql(name='stations', con=rds_sqlalchemy, if_exists="replace", chunksize=1000, index=False)
+        rds_sqlalchemy.dispose()
         print('Stations sent to RDS successfully')
 
     except:
@@ -50,7 +49,8 @@ def transform_load_stations_rds(bucket_name, key_name):
         print('Error: {} {} NOT sent to RDS'.format(bucket_name, key_name))
 
     # # read stations table
-    recent_rides = pd.read_sql_query("""SELECT COUNT(*) FROM stations;""", con=connection)
+    recent_rides = pd.read_sql_query("""SELECT COUNT(*) FROM stations;""", con=rds_sqlalchemy)
+    rds_sqlalchemy.dispose()
     print('Stations Count: ', recent_rides)
 
     return print("Stations Transformed and Loaded to RDS")

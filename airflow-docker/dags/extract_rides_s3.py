@@ -2,24 +2,29 @@
 import os
 from glob import glob
 from config import *
-import boto3
+from AWSConnect import AWSConnect
 
-# connect to s3
-def s3_resource():
-    s3 = boto3.resource(
-        service_name=service_name,
-        region_name=region_name,
-        aws_access_key_id=aws_access_key_id,
-        aws_secret_access_key=aws_secret_access_key)
-    return s3
+# # connect to s3
+# def s3_resource():
+#     s3 = boto3.resource(
+#         service_name=service_name,
+#         region_name=region_name,
+#         aws_access_key_id=aws_access_key_id,
+#         aws_secret_access_key=aws_secret_access_key)
+#     return s3
 
 # upload to s3
 def upload_rides_s3(local_file_search, bucket_name, key_name):
 
+    # get data files
     data_directory = os.path.join(os.getcwd(), 'data')
     files = glob(os.path.join(data_directory, local_file_search))
+    # files = files[-5:]
     print('Files: ', files)
-    s3 = s3_resource()
+
+    # get class, and create connections
+    s3_connect = AWSConnect(rds_user, rds_pwd, rds_host, rds_port, rds_database, service_name, region_name, aws_access_key_id, aws_secret_access_key)
+    s3 = s3_connect.s3_resource()
 
     # for each file:
     for f in files:
