@@ -1,7 +1,7 @@
 Introduction:
 
-The purpose of this project is to use data science tools to analyze Capital Bikeshare usage around 
-Washington, DC before and during the COVID-19 ('coronavirus') pandemic to answer questions. Questions that come to mind include:
+The purpose of this project is to a.) create a ride report ETL pipeline and b.) use data science tools to analyze Capital Bikeshare usage around 
+Washington, DC before and during the COVID-19 ('coronavirus') pandemic. Questions that come to mind include:
 
 - What is the total number of rides since inception? Since COVID-19?
 - What are the highest (peak) and lowest (bottom) demand days/months since 2018? 
