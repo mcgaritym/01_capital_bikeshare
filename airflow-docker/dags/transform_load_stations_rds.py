@@ -1,7 +1,7 @@
 # import libraries
 import pandas as pd
 from config import *
-from io import BytesIO
+import io
 from AWSConnect import AWSConnect
 
 # function to transform/load station data
@@ -10,20 +10,32 @@ def transform_load_stations_rds(bucket_name, key_name):
     # get class, and create connections
     connect = AWSConnect(rds_user, rds_pwd, rds_host, rds_port, rds_database, service_name, region_name, aws_access_key_id, aws_secret_access_key)
     s3_client = connect.s3_client()
+    s3_resource = connect.s3_resource()
     rds_sqlalchemy = connect.rds_sqlalchemy()
 
-    try:
-        obj = s3_client.get_object(Bucket=bucket_name, Key=key_name)
-        df = pd.read_csv(BytesIO(obj['Body'].read()))
+    # for each object in bucket
+    object_list = list(s3_resource.Bucket(bucket_name).objects.all())
+    for obj in object_list:
 
-        # send to RDS
-        df.to_sql(name='stations', con=rds_sqlalchemy, if_exists="replace", chunksize=1000, index=False)
-        rds_sqlalchemy.dispose()
-        print('Stations sent to RDS successfully')
+        if key_name in obj.key:
 
-    except:
-        pass
-        print('Error: {} {} NOT sent to RDS'.format(bucket_name, key_name))
+                # get object
+                obj_body = s3_client.get_object(Bucket='capitalbikeshare-bucket', Key=obj.key)
+                df = pd.read_csv(io.BytesIO(obj_body['Body'].read()))
+
+                # send to RDS
+                try:
+                    print('ok4')
+                    df.to_sql(name='stations', con=rds_sqlalchemy, if_exists="replace", chunksize=1000, index=False)
+                    rds_sqlalchemy.dispose()
+                    print('{} stations sent to RDS successfully'.format(obj.key))
+
+                except Exception as e:
+                    print('{} stations NOT SENT to RDS'.format(obj.key))
+                    print(e)
+
+        else:
+            pass
 
     # read stations table
     recent_rides = pd.read_sql_query("""SELECT COUNT(*) FROM stations;""", con=rds_sqlalchemy)

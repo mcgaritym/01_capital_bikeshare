@@ -12,6 +12,7 @@ def create_database(database_name):
     # create database and drop tables if exists and create rides table attributes
     cursor.execute("CREATE DATABASE IF NOT EXISTS {};".format(database_name))
     cursor.execute("DROP TABLE IF EXISTS rides;")
+    cursor.execute("DROP TABLE IF EXISTS recent_rides;")
     cursor.execute("DROP TABLE IF EXISTS stations;")
     cursor.execute("""
     CREATE TABLE rides (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 

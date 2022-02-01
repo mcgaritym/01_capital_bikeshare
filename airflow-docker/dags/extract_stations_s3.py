@@ -7,6 +7,7 @@ import requests
 import pandas as pd
 from AWSConnect import AWSConnect
 
+# get stations and save to local csv
 def stations_csv_s3():
 
     # request json data
@@ -15,22 +16,21 @@ def stations_csv_s3():
 
     # flatten nested json
     df_stations = pd.json_normalize(todos, record_path=['stations'])
-    par_directory = os.path.dirname(os.getcwd())
-    data_directory = os.path.join(par_directory, 'data')
+    data_directory = os.path.join(os.getcwd(), 'data')
 
     # convert to csv and save
     df_stations.to_csv(data_directory + '/capital_bikeshare_stations.csv')
 
-    print('Stations sent to local csv')
+    return print('Stations sent to local csv')
 
-    return df_stations
+# extract stations to s3
+def extract_stations_s3(local_file_search, bucket_name, key_name):
 
-# upload to s3
-def upload_stations_s3(local_file_search, bucket_name, key_name):
+    # get data stored in local csv
+    stations_csv_s3()
 
     # get data files
-    par_directory = os.path.dirname(os.getcwd())
-    data_directory = os.path.join(par_directory, 'data')
+    data_directory = os.path.join(os.getcwd(), 'data')
     files = glob(os.path.join(data_directory, local_file_search))
 
     # get class, and create connections

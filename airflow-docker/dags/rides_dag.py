@@ -6,8 +6,8 @@ from airflow.operators.python import PythonOperator
 
 # import python functions in local python files
 from create_database import create_database
-from extract_rides_s3 import upload_rides_s3
-from extract_stations_s3 import upload_stations_s3
+from extract_rides_s3 import extract_rides_s3
+from extract_stations_s3 import extract_stations_s3
 from transform_load_rides_rds import transform_load_rides_rds
 from transform_load_stations_rds import transform_load_stations_rds
 from query_rides import query_rides
@@ -46,7 +46,7 @@ with DAG(
     # connect to SQL python task
     extract_rides_s3 = PythonOperator(
         task_id='extract_rides_s3_',
-        python_callable=upload_rides_s3,
+        python_callable=extract_rides_s3,
         op_kwargs={"local_file_search": '*-capitalbikeshare-*',
                    "bucket_name": 'capitalbikeshare-bucket',
                    "key_name": 'rides'},
@@ -56,7 +56,7 @@ with DAG(
     # connect to SQL python task
     extract_stations_s3 = PythonOperator(
         task_id='extract_stations_s3_',
-        python_callable=upload_stations_s3,
+        python_callable=extract_stations_s3,
         op_kwargs={"local_file_search": '*capital_bikeshare_stations*',
                    "bucket_name": 'capitalbikeshare-bucket',
                    "key_name": 'stations'},
@@ -77,7 +77,7 @@ with DAG(
         task_id='transform_load_stations_rds_',
         python_callable=transform_load_stations_rds,
         op_kwargs={"bucket_name": 'capitalbikeshare-bucket',
-                   "key_name": 'stations/capital_bikeshare_stations.csv'},
+                   "key_name": 'bikeshare_stations.csv'},
         dag=dag,
     )
 

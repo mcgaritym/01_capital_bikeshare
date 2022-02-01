@@ -4,8 +4,8 @@ from glob import glob
 from config import *
 from AWSConnect import AWSConnect
 
-# upload to s3
-def upload_rides_s3(local_file_search, bucket_name, key_name):
+# extract rides to s3
+def extract_rides_s3(local_file_search, bucket_name, key_name):
 
     # get data files
     data_directory = os.path.join(os.getcwd(), 'data')
@@ -17,7 +17,7 @@ def upload_rides_s3(local_file_search, bucket_name, key_name):
     s3 = s3_connect.s3_resource()
 
     # for each file:
-    for f in files[-5:]:
+    for f in files:
 
         # try to upload files to  buckets
         try:

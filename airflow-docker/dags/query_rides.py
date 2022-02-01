@@ -3,6 +3,7 @@ import pandas as pd
 from config import *
 from AWSConnect import AWSConnect
 
+# function to query rides table for recent rides
 def query_rides():
 
     # get class, and create connections

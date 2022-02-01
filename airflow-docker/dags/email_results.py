@@ -8,7 +8,7 @@ import pandas as pd
 from config import *
 from AWSConnect import AWSConnect
 
-# connect to SQL and create database, table
+# function to send email of rides table
 def email_results(sender, receiver, email_subject):
 
     # get class, and create connections

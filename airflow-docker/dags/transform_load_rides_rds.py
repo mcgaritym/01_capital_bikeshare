@@ -4,7 +4,7 @@ import io
 from config import *
 from AWSConnect import AWSConnect
 
-# function to clean ride date
+# function to clean rides dataframe
 def clean_rides(df):
 
     # rename, convert columns depending on file structure.
@@ -43,7 +43,7 @@ def clean_rides(df):
 
     return df
 
-
+# function to transform and load rides
 def transform_load_rides_rds(bucket_name, key_name):
 
     # get class, and create connections
@@ -54,17 +54,9 @@ def transform_load_rides_rds(bucket_name, key_name):
 
     # for each object in bucket
     object_list = list(s3_resource.Bucket(bucket_name).objects.all())
-    print(object_list)
-    object_list = object_list[-5:]
     for obj in object_list:
 
-    # for obj in s3_resource.Bucket(bucket_name).objects.all():
-
         if key_name in obj.key:
-
-            try:
-                # specify s3
-                print(obj)
 
                 # get object
                 obj_body = s3_client.get_object(Bucket='capitalbikeshare-bucket', Key=obj.key)
@@ -80,10 +72,8 @@ def transform_load_rides_rds(bucket_name, key_name):
                     print('{} rides sent to RDS successfully'.format(obj.key))
 
                 except Exception as e:
+                    print('{} rides NOT SENT to RDS'.format(obj.key))
                     print(e)
-
-            except :
-                print('Error: {} rides NOT sent to RDS'.format(obj.key))
 
         else:
             pass
