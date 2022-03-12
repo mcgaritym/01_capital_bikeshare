@@ -29,6 +29,7 @@ def query_rides():
     ORDER BY `started_at` DESC
     LIMIT 10;""", con=rds_sqlalchemy)
 
+    # print rides
     print(recent_rides)
 
     # send results to sql, and save to csv
