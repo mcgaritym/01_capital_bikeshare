@@ -21,13 +21,14 @@ def query_rides():
 
     # read query
     recent_rides = pd.read_sql_query("""
-    SELECT rides.ride_id, rides.started_at, rides.ended_at, rides.duration, 
+    SELECT rides.ride_id, rides.started_at, rides.ended_at, rides.duration,
     stations.name, stations.lat, stations.lon, stations.capacity, stations.short_name
     FROM rides
     JOIN stations
     ON rides.start_station_id = stations.short_name
-    ORDER BY `started_at` DESC
-    LIMIT 10;""", con=rds_sqlalchemy)
+    WHERE rides.started_at BETWEEN (NOW() - INTERVAL 100 DAY) AND NOW()
+    ORDER BY rides.started_at DESC
+    LIMIT 20;""", con=rds_sqlalchemy)
 
     # print rides
     print(recent_rides)
